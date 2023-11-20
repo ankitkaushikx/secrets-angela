@@ -38,7 +38,6 @@ const ListSchema = new mongoose.Schema({
   googleId: String,
 });
 
-ListSchema.plugin(passportLocalMongoose);
 const List = new mongoose.model("list", ListSchema);
 ListSchema.plugin(passportLocalMongoose);
 
@@ -49,7 +48,7 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (user, done) {
   done(null, user);
 });
-ListSchema.plugin(findOrCreate);
+
 passport.use(
   new GoogleStrategy(
     {
