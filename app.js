@@ -59,6 +59,14 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   res.render("login");
 });
+
+app.get("/logout", (req, res) => {
+  req.logOut((err) => {
+    if (err) {
+      console.log(err);
+    } else res.redirect("/");
+  });
+});
 app.get("/secrets", function (req, res) {
   if (req.isAuthenticated()) {
     res.render("secrets");
@@ -66,11 +74,31 @@ app.get("/secrets", function (req, res) {
     res.redirect("/login");
   }
 });
+
 app.post("/register", async (req, res) => {
-  List.register({ username: req.body.username }, req.body.password, function (err, list) {
+  // Use the List model directly for registration
+  List.register({ username: req.body.username }, req.body.password, function (err, user) {
     if (err) {
       console.log(err);
-      res.redirect("/register");
+      return res.redirect("/register");
+    }
+
+    // Authenticate the registered user and redirect to secrets
+    passport.authenticate("local")(req, res, function () {
+      res.redirect("/secrets");
+    });
+  });
+});
+
+app.post("/login", async (req, res) => {
+  const list = new List({
+    username: req.body.username,
+    password: req.body.password,
+  });
+  req.login(list, function (err) {
+    if (err) {
+      console.log(err);
+      redirect("/login");
     } else {
       passport.authenticate("local")(req, res, function () {
         res.redirect("/secrets");
@@ -78,8 +106,6 @@ app.post("/register", async (req, res) => {
     }
   });
 });
-
-app.post("/login", async (req, res) => {});
 
 // ?----------------------------------------------------------ENDOFIT-----///////////////////////////////////////////////////
 const PORT = process.env.PORT || 3000;
